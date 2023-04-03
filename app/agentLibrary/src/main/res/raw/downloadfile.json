@@ -1,0 +1,25 @@
+{
+  "deviceMessage": {
+    "header": {
+      "customer": "C123",
+      "model": "CM5",
+      "serialNo": "123-456-789",
+      "cId": "D-123-456-789-20221021231010",
+      "dMsgId" : "12345",
+      "sMsgId": 9034,
+      "msgType": "status",
+      "ver": "0.10"
+    },
+    "content": {
+      "opResults": [
+        {
+          "opSetId": 123,
+          "opId": 123,
+          "status": "downloadStarted",
+          "info": "",
+          "execDT": 1656275337
+        }
+      ]
+    }
+  }
+}

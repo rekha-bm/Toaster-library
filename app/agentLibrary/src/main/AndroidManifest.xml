@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.READ_PRIVILEGED_PHONE_STATE" />
+    <uses-permission
+        android:name="android.permission.SET_TIME"
+        tools:ignore="ProtectedPermissions" />
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.READ_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_INTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"/>
+    <uses-permission android:name="android.permission.DOWNLOAD_WITHOUT_NOTIFICATION" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES"/>
+    <permission android:name="com.verifone.dmsAgent.ACCESS_DMS_AGENT_SERVICE"
+        android:label="Allows applications to bind DMSAgent Service instance"
+        android:protectionLevel="normal"/>
+
+    <application android:name=".util.DmsApplication"
+        android:allowBackup="false"
+        android:largeHeap="true">
+        <service
+            android:name=".json.sevice.DMSAgentService"
+            android:enabled="true"
+            android:exported="true"
+            android:requestLegacyExternalStorage="true"
+            android:permission="com.verifone.dmsAgent.ACCESS_DMS_AGENT_SERVICE">
+            <intent-filter>
+                <action android:name="com.verifone.mqtt.ACTION_BIND_MQTT" />
+            </intent-filter>
+        </service>
+
+        <service android:name="org.eclipse.paho.android.service.MqttService" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.provider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths" />
+        </provider>
+    </application>
+
+</manifest>

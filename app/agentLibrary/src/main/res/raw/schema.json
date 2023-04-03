@@ -1,0 +1,1219 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+        "serverMessage": {
+            "type": "object",
+            "description": "Message from DMS Server",
+            "additionalProperties": false,
+            "properties": {
+                "header": {
+                    "type": "object",
+                    "description": "Message header",
+                    "additionalProperties": false,
+                    "properties": {
+                        "cId": {
+                            "type": "string",
+                            "description": "Correlation id used to trace the call sequence. Refer spec for details.",
+                            "minLength": 8,
+                            "maxLength": 64
+                        },
+                        "dMsgId": {
+                            "type": "integer",
+                            "description": "Device message Id. Refer spec for details."
+                        },
+                        "sMsgId": {
+                            "type": "integer",
+                            "description": "Server message Id. Refer spec for details."
+                        },
+                        "msgType": {
+                            "type": "string",
+                            "description": "Message type. mgtPlan - Management Plan. srvResponse- Server Response.",
+                            "enum": [
+                                "mgtPlan",
+                                "srvResponse"
+                            ]
+                        },
+                        "ver": {
+                            "type": "string",
+                            "description": "DMS protocol version.",
+                            "enum": [
+                                "0.10"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "cId",
+                        "dMsgId",
+                        "sMsgId",
+                        "msgType",
+                        "ver"
+                    ]
+                },
+                "content": {
+                    "oneOf ": [
+                        {
+                            "$ref": "#/$defs/opSets"
+                        },
+                        {
+                            "$ref": "#/$defs/svrResponseSuccess"
+                        },
+                        {
+                            "$ref": "#/$defs/svrResponseFailed"
+                        },
+                        {
+                            "$ref": "#/$defs/encryptedContent"
+                        }
+                    ]
+                },
+                "encryption": {
+                    "$ref ": "#/$defs/encryption"
+                },
+                "signature": {
+                    "$ref ": "#/$defs/signature"
+                }
+            },
+            "required": [
+                "header",
+                "content"
+            ]
+        },
+        "deviceMessage": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "header": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "customer": {
+                            "type": "string",
+                            "description": "Customer Id",
+                            "minLength": 4,
+                            "maxLength": 32
+                        },
+                        "model": {
+                            "type": "string",
+                            "description": "Device model name",
+                            "minLength": 3,
+                            "maxLength": 32
+                        },
+                        "serialNo": {
+                            "type": "string",
+                            "description": "Device serial number",
+                            "minLength": 4,
+                            "maxLength": 32
+                        },
+                        "cId": {
+                            "type": "string",
+                            "description": "Correlation id used to trace the call sequence. Refer spec for details.",
+                            "minLength": 8,
+                            "maxLength": 64
+                        },
+                        "dMsgId": {
+                            "type": "integer",
+                            "description": "Device message Id. Refer spec for details."
+                        },
+                        "sMsgId": {
+                            "type": "integer",
+                            "description": "Server message Id. Refer spec for details."
+                        },
+                        "msgType": {
+                            "type": "string",
+                            "description": "Message type. status - Status report. register - Registration/KEM.",
+                            "enum": [
+                                "status",
+                                "register"
+                            ]
+                        },
+                        "ver": {
+                            "type": "string",
+                            "description": "DMS protocol version.",
+                            "enum": [
+                                "0.10"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "cId",
+                        "dMsgId",
+                        "sMsgId",
+                        "msgType",
+                        "ver"
+                    ]
+                },
+                "encryption": {
+                    "$ref": "#/$defs/encryption"
+                },
+                "signature": {
+                    "$ref": "#/$defs/signature"
+                },
+                "content": {
+                    "oneOf": [
+                        {
+                            "$ref": "#/$defs/register"
+                        },
+                        {
+                            "$ref": "#/$defs/opResults"
+                        },
+                        {
+                            "$ref": "#/$defs/encryptedContent"
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "header",
+                "content"
+            ]
+        }
+    },
+    "$defs": {
+        "uint32": {
+            "$id": "uint32",
+            "type": "integer",
+            "description": "",
+            "maximum": 999999999999999
+        },
+        "epochDateTime": {
+            "type": "integer",
+            "description": "Unix time format (also known as POSIX or Epoch time)",
+            "minimum": 0,
+            "maximum": 253402300799
+        },
+        "execMW": {
+            "type": "boolean",
+            "description": "True - Operation set should be executed during Maintainance Window (Non - business hours). False - Operation set needs to be executed as per execDT." ,
+            "default": false
+        },
+        "execDT": {
+            "$ref": "#/$defs/epochDateTime",
+            "description": "Date and time in epoch format. Indicates the date and time when the operations part of this Operation set should be executed. Value of 0 - indicates that this Operation set should be executed immidiately."
+        },
+        "opsetId": {
+            "$ref": "#/$defs/uint32",
+            "description": "Operation set id."
+        },
+        "opId": {
+            "$ref": "#/$defs/uint32",
+            "description": "Operation id."
+        },
+        "signature": {
+            "$id": "signature",
+            "type": "object",
+            "description": "Message signature. Refer spec for details.",
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Message signature type.",
+                    "enum": [
+                        "MAC"
+                    ]
+                },
+                "algo": {
+                    "type": "string",
+                    "description": "Message signature generation algorithm.",
+                    "enum": [
+                        "CMAC-AES"
+                    ]
+                },
+                "signingKeyId": {
+                    "type": "string",
+                    "description": "Key Checksum Value (KCV) of the signing key.",
+                    "maxLength": 64
+                },
+                "value": {
+                    "type": "string",
+                    "description": "Digital signature of the message payload. Refer spec for details.",
+                    "maxLength": 64
+                }
+            },
+            "required": [
+                "type",
+                "algo",
+                "signingKeyId",
+                "value"
+            ]
+        },
+        "encryption": {
+            "$id": "encryption",
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "description": "Encryption type.",
+                    "enum": [
+                        "ENC"
+                    ]
+                },
+                "algo": {
+                    "type": "string",
+                    "description": "Encryption algorithm used to encrypt the Message payload.",
+                    "enum": [
+                        "AES-CBC"
+                    ]
+                },
+                "encryptKeyId": {
+                    "type": "string",
+                    "description": "Key Checksum Value (KCV) of the encryption key.",
+                    "maxLength": 64
+                },
+                "IV": {
+                    "type": "string",
+                    "description": "Initialization Vector. Refer spec for details.",
+                    "maxLength": 64
+                }
+            },
+            "required": [
+                "type",
+                "algo",
+                "encryptKeyId",
+                "IV"
+            ]
+        },
+        "encryptedContent": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "encryptedContent": {
+                    "type": "string",
+                    "description": "Encrypted content. Refer spec for details. ",
+                    "maxLength": 99999
+                }
+            },
+            "required": [
+                "encryptedContent"
+            ]
+        },
+        "downloadFile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/opsetId"
+                },
+                "execMW": {
+                    "$ref": "#/$defs/execMW"
+                },
+                "execDT": {
+                    "$ref": "#/$defs/execDT"
+                },
+                "installDT": {
+                    "$ref": "#/$defs/epochDateTime",
+                    "description": "Date and time in epoch format. Indicates the date and time when the software packages should be installed. Value of 0 - indicates that installation should be done immidiately after download."
+                },
+                "forceInstall": {
+                    "type": "boolean",
+                    "description": "True - software package should be installed even if permission to install is denied by other applications on device. False - Do not install until permissions to install are granted by other applications on the device",
+                    "default": false
+                },
+                "ops": {
+                    "type": "array",
+                    "description": "Sequence of Operation to execute in order.",
+                    "maxItems": 25,
+                    "items": [
+                        {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "$ref": "#/$defs/opId"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Operation name. Indicates - download and install the specified package.",
+                                    "enum": [
+                                        "downloadFile"
+                                    ]
+                                },
+                                "onError": {
+                                    "type": "string",
+                                    "description": "Indicates the action to perform if execution of this operation fails. continue - Continue to next operation in this Operation set. abort - Abort the Operation set. Do not execute rest of the operations in this Operation set. showError - Abort the Operation set. Show error on device. ",
+                                    "enum": [
+                                        "continue",
+                                        "abort",
+                                        "showError"
+                                    ]
+                                },
+                                "onInstall": {
+                                    "type": "string",
+                                    "description": "Indicates the action to perform after installation. reboot - Reboot the device. restartApp - Restart the application.",
+                                    "enum": [
+                                        "reboot",
+                                        "restartApp"
+                                    ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "description": "",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "dldProtocol": {
+                                            "type": "string",
+                                            "description": "Download protocol.",
+                                            "enum": [
+                                                "https"
+                                            ]
+                                        },
+                                        "fileName": {
+                                            "type": "string",
+                                            "description": "Name of the package file",
+                                            "maxLength": 256
+                                        },
+                                        "url": {
+                                            "type": "string",
+                                            "description": "URL of the package file to download.",
+                                            "maxLength": 512
+                                        },
+                                        "fileSize": {
+                                            "type": "integer",
+                                            "description": "Size of the package file to download.",
+                                            "maxLength": 5512
+                                        },
+                                        "fileType": {
+                                            "type": "string",
+                                            "description": "Type of the package file to download.",
+                                            "enum": [
+                                                "package",
+                                                "androidOTA"
+                                            ]
+                                        },
+                                        "fileHash": {
+                                            "type": "string",
+                                            "description": "Hash of the package file to download. Refer spec for details.",
+                                            "maxLength": 512
+                                        },
+                                        "hashAlgo": {
+                                            "type": "string",
+                                            "description": "Algorithm used for generating the Hash of the package file to download. Refer spec for details.",
+                                            "enum": [
+                                                "SHA-256",
+                                                "CMAC"
+                                            ]
+                                        }
+                                    },
+                                    "required": [
+                                        "dldProtocol",
+                                        "fileName",
+                                        "url",
+                                        "fileSize",
+                                        "fileType",
+                                        "fileHash",
+                                        "hashAlgo"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "name",
+                                "parameters"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "ops"
+            ]
+        },
+        "setClock": {
+            "type": "object",
+            "description": "",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/opsetId"
+                },
+                "execMW": {
+                    "$ref": "#/$defs/execMW"
+                },
+                "execDT": {
+                    "$ref": "#/$defs/execDT"
+                },
+                "ops": {
+                    "type": "array",
+                    "description": "",
+                    "maxItems": 1,
+                    "items": [
+                        {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "$ref": "#/$defs/opId"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Operation name. Indicates - download and install the specified package.",
+                                    "enum": [
+                                        "downloadFile"
+                                    ]
+                                },
+                                "onError": {
+                                    "type": "string",
+                                    "description": "Indicates the action to perform if execution of this operation fails. continue - Continue to next operation in this Operation set. abort - Abort the Operation set. Do not execute rest of the operations in this Operation set. showError - Abort the Operation set. Show error on device. ",
+                                    "enum": [
+                                        "continue",
+                                        "abort",
+                                        "showError"
+                                    ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "description": "",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "time": {
+                                            "$ref": "#/$defs/epochDateTime",
+                                            "description": "Date and time to be set on the device. Value in in epoch format."
+                                        },
+                                        "timeZone": {
+                                            "type": "string",
+                                            "description": "Olson time zone. Refer spec for details",
+                                            "maxLength": 64
+                                        }
+                                    },
+                                    "required": [
+                                        "time",
+                                        "timeZone"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "name",
+                                "parameters"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "ops"
+            ]
+        },
+        "getOSLogFile": {
+            "type": "object",
+            "description": "",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/opsetId"
+                },
+                "execMW": {
+                    "$ref": "#/$defs/execMW"
+                },
+                "execDT": {
+                    "$ref": "#/$defs/execDT"
+                },
+                "ops": {
+                    "type": "array",
+                    "description": "",
+                    "maxItems": 1,
+                    "items": [
+                        {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "$ref": "#/$defs/opId"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Operation name. Indicates - download and install the specified package.",
+                                    "enum": [
+                                        "downloadFile"
+                                    ]
+                                },
+                                "onError": {
+                                    "type": "string",
+                                    "description": "Indicates the action to perform if execution of this operation fails. continue - Continue to next operation in this Operation set. abort - Abort the Operation set. Do not execute rest of the operations in this Operation set. showError - Abort the Operation set. Show error on device. ",
+                                    "enum": [
+                                        "continue",
+                                        "abort",
+                                        "showError"
+                                    ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "description": "",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "uploadMethod": {
+                                            "type": "string",
+                                            "description": "Upload method.",
+                                            "enum": [
+                                                "webService"
+                                            ]
+                                        },
+                                        "endPoint": {
+                                            "type": "string",
+                                            "description": "URL to upload server to upload the file",
+                                            "maxLength": 1024
+                                        }
+                                    },
+                                    "required": [
+                                        "uploadMethod",
+                                        "endPoint"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "name",
+                                "parameters"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "ops"
+            ]
+        },
+        "getDeviceProfile": {
+            "type": "object",
+            "description": "",
+            "additionalProperties": false,
+            "properties": {
+                "id": {
+                    "$ref": "#/$defs/opsetId"
+                },
+                "execMW": {
+                    "$ref": "#/$defs/execMW"
+                },
+                "execDT": {
+                    "$ref": "#/$defs/execDT"
+                },
+                "ops": {
+                    "type": "array",
+                    "description": "",
+                    "maxItems": 1,
+                    "items": [
+                        {
+                            "type": "object",
+                            "description": "",
+                            "additionalProperties": false,
+                            "properties": {
+                                "id": {
+                                    "$ref": "#/$defs/opId"
+                                },
+                                "name": {
+                                    "type": "string",
+                                    "description": "Operation name. Indicates - download and install the specified package.",
+                                    "enum": [
+                                        "downloadFile"
+                                    ]
+                                },
+                                "onError": {
+                                    "type": "string",
+                                    "description": "Indicates the action to perform if execution of this operation fails. continue - Continue to next operation in this Operation set. abort - Abort the Operation set. Do not execute rest of the operations in this Operation set. showError - Abort the Operation set. Show error on device. ",
+                                    "enum": [
+                                        "continue",
+                                        "abort",
+                                        "showError"
+                                    ]
+                                },
+                                "parameters": {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "dataSetName": {
+                                            "type": "string",
+                                            "description": "DMS can request for a specific datset from Device. * indicates all datasets. Possible values - applications, device, software, identifiers, dynamics",
+                                            "maxLength": 1024
+                                        }
+                                    },
+                                    "required": [
+                                        "dataSetName"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "id",
+                                "name",
+                                "parameters"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "id",
+                "ops"
+            ]
+        },
+        "applications": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "const": "applications"
+                },
+                "content": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "applications": {
+                            "type": "array",
+                            "minItems": 1,
+                            "maxItems": 100,
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "maxLength": 64
+                                        },
+                                        "version": {
+                                            "type": "string",
+                                            "maxLength": 32
+                                        },
+                                        "type": {
+                                            "type": "string",
+                                            "enum": [
+                                                "OS",
+                                                "application",
+                                                "paymentApp",
+                                                "other"
+                                            ]
+                                        },
+                                        "location": {
+                                            "type": "string",
+                                            "maxLength": 32
+                                        },
+                                        "bundleName": {
+                                            "type": "string",
+                                            "maxLength": 64
+                                        },
+                                        "bundleVersion": {
+                                            "type": "string",
+                                            "maxLength": 32
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "version"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "required": [
+                "system",
+                "content"
+            ]
+        },
+        "uploadFile": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "const": "file"
+                },
+                "content": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "maxLength": 128
+                        },
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "logFile",
+                                "other"
+                            ]
+                        },
+                        "fileContent": {
+                            "type": "string",
+                            "enum": [
+                                "png",
+                                "tgz",
+                                "gz",
+                                "txt",
+                                "other"
+                            ]
+                        },
+                        "fileHash": {
+                            "type": "string",
+                            "maxLength": 512
+                        },
+                        "hashAlgo": {
+                            "type": "string",
+                            "enum": [
+                                "SHA-256"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "name",
+                        "type",
+                        "fileContent",
+                        "fileHash",
+                        "hashAlgo"
+                    ]
+                }
+            },
+            "required": [
+                "system",
+                "content"
+            ]
+        },
+        "device": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "const": "device"
+                },
+                "content": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "properties": {
+                        "partNumber": {
+                            "type": "string",
+                            "maxLength": 64
+                        },
+                        "macAddress": {
+                            "type": "string",
+                            "maxLength": 17
+                        },
+                        "manufacturer": {
+                            "type": "string",
+                            "maxLength": 32
+                        },
+                        "manufactureDT": {
+                            "$ref": "#/$defs/epochDateTime"
+                        },
+                        "hardwareVersion": {
+                            "type": "string",
+                            "maxLength": 32
+                        },
+                        "IMEI": {
+                            "type": "string",
+                            "maxLength": 20
+                        },
+                        "modelVarient": {
+                            "type": "string",
+                            "maxLength": 32
+                        }
+                    }
+                }
+            },
+            "required": [
+                "system",
+                "content"
+            ]
+        },
+        "software": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "const": "software"
+                },
+                "content": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "OSName": {
+                            "type": "string",
+                            "maxLength": 64
+                        },
+                        "OSVersion": {
+                            "type": "string",
+                            "maxLength": 32
+                        }
+                    },
+                    "required": [
+                        "OSName",
+                        "OSVersion"
+                    ]
+                }
+            },
+            "required": [
+                "system",
+                "content"
+            ]
+        },
+        "identifiers": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "const": "identifiers"
+                },
+                "content": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "properties": {
+                        "deviceId": {
+                            "type": "string",
+                            "maxLength": 32
+                        },
+                        "ipAddress": {
+                            "type": "string",
+                            "maxLength": 15
+                        },
+                        "custom": {
+                            "type": "array",
+                            "minItems": 0,
+                            "maxItems": 10,
+                            "items": [
+                                {
+                                    "type": "object",
+                                    "additionalProperties": false,
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "maxLength": 32
+                                        },
+                                        "value": {
+                                            "type": "string",
+                                            "maxLength": 64
+                                        }
+                                    },
+                                    "required": [
+                                        "name",
+                                        "value"
+                                    ]
+                                }
+                            ]
+                        }
+                    }
+                }
+            },
+            "required": [
+                "system",
+                "content"
+            ]
+        },
+        "dynamics": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "system": {
+                    "type": "string",
+                    "const": "dynamics"
+                },
+                "content": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "minProperties": 1,
+                    "properties": {
+                        "lastBootDT": {
+                            "$ref": "#/$defs/epochDateTime"
+                        },
+                        "localDT": {
+                            "$ref": "#/$defs/epochDateTime"
+                        },
+                        "timeZone": {
+                            "type": "string",
+                            "maxLength": 64
+                        },
+                        "GPS": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "long": {
+                                    "type": "number",
+                                    "maxLength": 9
+                                },
+                                "lat": {
+                                    "type": "number",
+                                    "maxLength": 9
+                                }
+                            },
+                            "required": [
+                                "long",
+                                "lat"
+                            ]
+                        }
+                    }
+                }
+            },
+            "required": [
+                "system",
+                "content"
+            ]
+        },
+        "opSets": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "opSets": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "opSet": {
+                            "type": "array",
+                            "maxItems": 10,
+                            "items": {
+                                "oneOf": [
+                                    {
+                                        "$ref": "#/$defs/downloadFile"
+                                    },
+                                    {
+                                        "$ref": "#/$defs/setClock"
+                                    },
+                                    {
+                                        "$ref": "#/$defs/getOSLogFile"
+                                    },
+                                    {
+                                        "$ref": "#/$defs/getDeviceProfile"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "required": [
+                        "opSet"
+                    ]
+                }
+            }
+        },
+        "svrResponseSuccess": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "const": "success"
+                },
+                "info": {
+                    "type": "string",
+                    "maxLength": 128
+                }
+            },
+            "required": [
+                "status"
+            ]
+        },
+        "svrResponseFailed": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "status": {
+                    "type": "string",
+                    "const": "failed"
+                },
+                "errorMsg": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "errorCode": {
+                    "type": "string",
+                    "maxLength": 128
+                },
+                "details": {
+                    "type": "string",
+                    "maxLength": 128
+                }
+            },
+            "required": [
+                "status",
+                "errorMsg",
+                "errorCode"
+            ]
+        },
+        "register": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+                "encrAgentKeys": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "encrypted/base64"
+                        },
+                        "encrAlgo": {
+                            "type": "string",
+                            "const": "RSA-OAEP"
+                        },
+                        "encrKeyId": {
+                            "type": "string",
+                            "maxLength": 128
+                        },
+                        "value": {
+                            "type": "string",
+                            "maxLength": 128
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "encrAlgo",
+                        "encrKeyId",
+                        "value"
+                    ]
+                },
+                "certificate": {
+                    "type": "object",
+                    "properties": {
+                        "source": {
+                            "type": "string",
+                            "const": "Agent"
+                        },
+                        "keyId": {
+                            "type": "string",
+                            "maxLength": 128
+                        },
+                        "value": {
+                            "type": "string",
+                            "maxLength": 2048
+                        }
+                    },
+                    "required": [
+                        "source",
+                        "keyId",
+                        "value"
+                    ]
+                },
+                "encrAgentKeysSignature": {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "const": "PKI"
+                        },
+                        "signAlgo": {
+                            "type": "string",
+                            "const": "PKCS-1.5"
+                        },
+                        "hashAlgo": {
+                            "type": "string",
+                            "const": "SHA-256"
+                        },
+                        "keyId": {
+                            "type": "string",
+                            "maxLength": 128
+                        },
+                        "value": {
+                            "type": "string",
+                            "maxLength": 128
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "signAlgo",
+                        "hashAlgo",
+                        "keyId",
+                        "value"
+                    ]
+                }
+            },
+            "required": [
+                "encrAgentKeys",
+                "certificate",
+                "encrAgentKeysSignature"
+            ]
+        },
+        "opResults": {
+            "type": "object",
+            "properties": {
+                "opResults": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": [
+                        {
+                            "type": "object",
+                            "properties": {
+                                "opSetId": {
+                                    "$ref": "#/$defs/uint32"
+                                },
+                                "opId": {
+                                    "$ref": "#/$defs/uint32"
+                                },
+                                "status": {
+                                    "type": "string",
+                                    "enum": [
+                                        "continue",
+                                        "abort",
+                                        "showError",
+                                        "success",
+                                        "downloadStarted",
+                                        "downloadInProgress",
+                                        "downloadCompleted",
+                                        "installationStarted",
+                                        "installationInProgress",
+                                        "installed",
+                                        "downloadFailed",
+                                        "installFailed",
+                                        "installPostponed",
+                                        "failed"
+                                    ]
+                                },
+                                "info": {
+                                    "type": "string",
+                                    "maxLength": 255
+                                },
+                                "execDT": {
+                                    "$ref": "#/$defs/epochDateTime"
+                                },
+                                "dataSets": {
+                                    "type": "array",
+                                    "minItems": 1,
+                                    "maxItems": 10,
+                                    "items": {
+                                        "oneOf": [
+                                            {
+                                                "$ref": "#/$defs/applications"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/device"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/software"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/identifiers"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/dynamics"
+                                            },
+                                            {
+                                                "$ref": "#/$defs/uploadFile"
+                                            }
+                                        ]
+                                    }
+                                }
+                            },
+                            "required": [
+                                "opSetId",
+                                "opId",
+                                "status",
+                                "execDT"
+                            ]
+                        }
+                    ]
+                }
+            },
+            "required": [
+                "opResults"
+            ]
+        }
+    }
+}

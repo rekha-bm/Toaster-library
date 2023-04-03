@@ -1,0 +1,12 @@
+/**
+ * Automatically generated file. DO NOT MODIFY
+ */
+package com.verifone.dms.agent.lib;
+
+public final class BuildConfig {
+  public static final boolean DEBUG = Boolean.parseBoolean("true");
+  public static final String LIBRARY_PACKAGE_NAME = "com.verifone.dms.agent.lib";
+  public static final String BUILD_TYPE = "debug";
+  // Field from build type: debug
+  public static final String VHQ_APPLICATION_ID = "com.verifone.dms.agent.testapp";
+}
